@@ -126,14 +126,92 @@ EXEC sp_addrolemember db_datareader, Capturista
 --TAREA
 /*
 AL ROL VENDEDOR DAR PERMISOS PARA CREAR TABLAS, VISTAS, ETC,
-LEER, ESCRIBIR, CREAR USUARIOS
+LEER, ESCRIBIR, CREAR USUARIOS */
 
+
+EXEC sp_addrolemember db_ddladmin, Vendedor --PARA PODER HACER VISTAS Y DEMAS
+EXEC sp_addrolemember db_datawriter, Vendedor --PARA PODER CREAR leer
+EXEC sp_addrolemember db_datareader, Vendedor --PARA PODER CREAR escribir
+EXEC sp_addrolemember db_accessadmin, Vendedor --PARA PODER CREAR USUARIOS
+
+/*
 CREAR 3 USUARIOS Y SUS LOGIN RESPECTIVOS Y AGREGARLOS 
 PARA QUE SEAN CAPTURISTAS 
-
-CREAR 5 USUARIOS Y SUS LOGINS Y AGREGARLOS AL ROL DE VENDEDOR
-
 */
+
+--CAPTURISTA1
+	CREATE LOGIN capturista1
+	WITH PASSWORD = '1234',
+	DEFAULT_DATABASE = Northwind
+	GO
+
+	CREATE USER capturista1
+	FOR LOGIN capturista1;
+
+--CAPTURISTA2
+	CREATE LOGIN capturista2
+	WITH PASSWORD = '1234',
+	DEFAULT_DATABASE = Northwind;
+
+	CREATE USER capturista2
+	FOR LOGIN capturista2;
+
+--CAPTURISTA3
+	CREATE LOGIN capturista3
+	WITH PASSWORD = '1234',
+	DEFAULT_DATABASE = Northwind;
+
+	CREATE USER capturista3
+	FOR LOGIN capturista3;
+
+--ASIGNAR LOS ROLES
+ALTER ROLE Capturista ADD MEMBER Capturista1;
+ALTER ROLE Capturista ADD MEMBER Capturista2;
+ALTER ROLE Capturista ADD MEMBER Capturista3;
+
+/*
+CREAR 5 USUARIOS Y SUS LOGINS Y AGREGARLOS AL ROL DE VENDEDOR
+*/
+CREATE LOGIN vendedor1
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind;
+
+CREATE USER vendedor1
+FOR LOGIN vendedor1;
+
+CREATE LOGIN vendedor2
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind;
+
+CREATE USER vendedor2
+FOR LOGIN vendedor2;
+
+CREATE LOGIN vendedor3
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind;
+
+CREATE USER vendedor3
+FOR LOGIN vendedor3;
+
+CREATE LOGIN vendedor4
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind;
+
+CREATE USER vendedor4
+FOR LOGIN vendedor4;
+
+CREATE LOGIN vendedor5
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind;
+
+CREATE USER vendedor5
+FOR LOGIN vendedor5;
+
+ALTER ROLE Vendedor ADD MEMBER vendedor1;
+ALTER ROLE Vendedor ADD MEMBER vendedor2;
+ALTER ROLE Vendedor ADD MEMBER vendedor3;
+ALTER ROLE Vendedor ADD MEMBER vendedor4;
+ALTER ROLE Vendedor ADD MEMBER vendedor5;
 
 SELECT sc.name, o.name
 FROM sys.objects o
