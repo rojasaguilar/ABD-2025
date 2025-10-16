@@ -112,7 +112,28 @@ set ShippedDate = DATEADD(YEAR, 27, ShippedDate),
 RequiredDate = DATEADD(YEAR, 27, RequiredDate)
 
 UPDATE Personas.Employees 
-set BirthDate = DATEADD(YEAR, 20, BirthDate) -- 1992 → 2023
+set BirthDate = DATEADD(YEAR, 20, BirthDate) 
+
+--7 CREAR UN ROL
+CREATE ROLE Capturista;
+CREATE ROLE Vendedor;
+
+--AL ROL CAPTURISTA: LECTURA Y ESCRITURA
+
+EXEC sp_addrolemember db_datawriter, Capturista
+EXEC sp_addrolemember db_datareader, Capturista
+
+--TAREA
+/*
+AL ROL VENDEDOR DAR PERMISOS PARA CREAR TABLAS, VISTAS, ETC,
+LEER, ESCRIBIR, CREAR USUARIOS
+
+CREAR 3 USUARIOS Y SUS LOGIN RESPECTIVOS Y AGREGARLOS 
+PARA QUE SEAN CAPTURISTAS 
+
+CREAR 5 USUARIOS Y SUS LOGINS Y AGREGARLOS AL ROL DE VENDEDOR
+
+*/
 
 SELECT sc.name, o.name
 FROM sys.objects o
