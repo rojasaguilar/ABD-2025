@@ -213,8 +213,87 @@ ALTER ROLE Vendedor ADD MEMBER vendedor3;
 ALTER ROLE Vendedor ADD MEMBER vendedor4;
 ALTER ROLE Vendedor ADD MEMBER vendedor5;
 
+ALTER SERVER ROLE securityadmin ADD MEMBER vendedor1;
+
 SELECT sc.name, o.name
 FROM sys.objects o
 JOIN sys.schemas sc
 ON (o.schema_id = sc.schema_id)
 WHERE o.type = 'U';
+
+--8. PROBAR UN USUARIO CAPTURISTA
+-- SE EJECUTO CON capturista1
+
+	SELECT * FROM Ventas.Orders
+	WHERE OrderID BETWEEN 10500 AND 10550;
+
+	INSERT INTO Personas.Employees
+	(LastName, FirstName, BirthDate, ReportsTo)
+	VALUES
+	('Rojas', 'Aguilar', '2003/05/10',1);
+
+	update Personas.Employees
+	set Title = 'Sales Representative', 
+		TitleOfCourtesy = 'Mr.',
+		PostalCode = '63159'
+	WHERE EmployeeID = 10;
+
+	DELETE FROM Personas.Employees
+	WHERE EmployeeID = 10;
+
+--9. PROBAR UN USUARIO VENDEDOR
+
+
+--crear login para nuevo usuario que se creará con vendedor1)
+create login venUs
+WITH PASSWORD = '1234',
+DEFAULT_DATABASE = Northwind
+
+exec as user = 'vendedor1';
+
+CREATE TABLE prueba (
+pruebaID int PRIMARY KEY identity(1,1),
+prueba VARCHAR(50)
+)
+CREATE USER venUs
+FOR LOGIN venUs
+
+SELECT name, type_desc, create_date
+FROM sys.database_principals
+WHERE type IN ('S', 'U', 'G') AND name NOT LIKE '##%';
+ 
+ SELECT 
+    r.name AS RolServidor,
+    m.name AS Miembro
+FROM sys.server_role_members rm
+JOIN sys.server_principals r ON rm.role_principal_id = r.principal_id
+JOIN sys.server_principals m ON rm.member_principal_id = m.principal_id
+ORDER BY r.name;
+
+
+--
+
+EXEC AS user = 'vendedor2';
+CREATE TABLE Prueba3
+(
+idPrueba2 SMALLINT,
+pruebaDescripcion VARCHAR(100)
+);
+
+ALTER AUTHORIZATION ON object ::Prueba3
+TO venUs;
+
+ALTER SCHEMA Personas
+TRANSFER dbo.prueba3;
+
+REVERT; --para volver a l usuario anterior
+
+SELECT SUSER_NAME() as [LOGIN],
+		USER_NAME() as [USUARIO]
+
+	SELECT * FROM sys.objects
+	WHERE TYPE = 'U' AND 
+	NAME = 'Prueba2'
+
+-- PARA REMOVER MIEMBROS DE UN ROL A NIVEL DE BD
+-- EXEC sp_droprolemember roledb, role/user
