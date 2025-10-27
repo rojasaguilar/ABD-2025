@@ -232,3 +232,45 @@ INNER JOIN sys.indexes AS dbindexes
     ON dbindexes.object_id = indexstats.object_id
     AND indexstats.index_id = dbindexes.index_id
 WHERE dbindexes.is_primary_key = 1;
+
+--TODOS JUNTOS
+SELECT OBJECT_NAME(IDX.OBJECT_ID) AS Table_Name,
+IDX.name AS Index_Name,
+IDXPS.index_type_desc AS Index_Type,
+IDXPS.avg_fragmentation_in_percent AS
+Fragmentation_Percentage
+FROM sys.dm_db_index_physical_stats(DB_ID(), NULL,
+NULL, NULL, NULL) IDXPS
+INNER JOIN sys.indexes IDX
+ON IDX.object_id = IDXPS.object_id
+AND IDX.index_id = IDXPS.index_id
+where OBJECT_NAME(IDX.OBJECT_ID) = 'Orders'
+--ORDER BY Fragmentation_Percentage DESC
+
+--RECONSTRUIR Y REORGANIZAR INDICES DE ORDERS
+ALTER INDEX CustomerID
+ON Ventas.orders
+REBUILD;
+
+ALTER INDEX CustomerID
+on Ventas.orders
+REORGANIZE;
+
+--RECONSTRUIR Y REORGANIZAR INDICES DE LA TABLA
+ALTER INDEX ALL
+ON Ventas.orders
+REBUILD;
+
+ALTER INDEX ALL
+on Ventas.orders
+REORGANIZE;
+
+SELECT o.OrderID, o.OrderDate,
+	   (e.FirstName + ' ' + e.LastName) as empleado,
+	   c.CompanyName as cliente
+from Ventas.Orders o 
+inner join Personas.Employees e
+on (e.EmployeeID = o.EmployeeID)
+inner join Personas.Customers c 
+on (c.CustomerID = o.CustomerID)
+order by c.CompanyName
