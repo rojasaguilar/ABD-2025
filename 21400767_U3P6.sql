@@ -160,12 +160,30 @@ SET @fecha = '2024/03/15'
  SET STATISTICS IO ON
  SET STATISTICS TIME ON
  SELECT * FROM Reports
- WHERE ReportDate.YEAR('2023')
+ WHERE YEAR(ReportDate) = '2023'
  SET STATISTICS IO OFF 
  SET STATISTICS TIME OFF;
 
  /*
- 
+ SQL Server parse and compile time: 
+   CPU time = 0 ms, elapsed time = 1 ms.
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 0 ms.
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 0 ms.
+
+(27800 rows affected)
+Table 'Reports'. Scan count 1, logical reads 100373, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+
+ SQL Server Execution Times:
+   CPU time = 312 ms,  elapsed time = 1701 ms.
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 0 ms.
+
+Completion time: 2025-10-27T09:32:41.6045240-07:00
  */
 
 
@@ -206,3 +224,14 @@ Completion time: 2025-10-27T09:22:30.8837443-07:00
  INSERT INTO Employees (EmpleadoNombre, EmpleadoEmail)
  values ('Empleado Reports', 'empleado@gmail.com')
  GO 10
+
+ select * from Reports;
+ select * from Employees;
+
+ update Reports
+ SET EMPLEADO = 5;
+
+ --7. CREAR LA FK
+ ALTER TABLE REPORTS 
+ ADD CONSTRAINT FK_ReportEmployee
+ FOREIGN KEY(Empleado) references Employees(EmpleadoId);
