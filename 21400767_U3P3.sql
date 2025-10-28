@@ -20,6 +20,8 @@ LOG ON (
  FILENAME = 'C:\ABD2025\BDITTEPIC.ldf'
 )
 
+USE BDITTEPIC
+
 --2. Crea tres roles:
 	/*
 	• El primero: es un rol que puede hacer respaldos, modificaciones al esquema de la
@@ -235,6 +237,13 @@ EXEC AS USER = 'crudUser';
 --14. Genere el diagrama de la bd (dbo)
 
 --15. Describe como quedo la bd con comentarios.
+
+/*
+ESTA BASE DE DATOS HACE REFERENCIA A LA ORGANIZACIÓN DE UNA INSTITUCIÓN QUE OFRECE 
+CURSOS, TALLER Y DIPLOMADOS IMPARTIDOS POR UN INSTRUCTOR.
+
+Además, ADMIISTRA LOS CURSOS ABIERTOS, LA LISTA DE LOS PARTICIPANTES Y LOS TRABAJADORES EN LA LISTA DE CADA CURSO
+*/
 
 --16. Crear al menos tres índices adicionales en las tablas que tu elijas
 

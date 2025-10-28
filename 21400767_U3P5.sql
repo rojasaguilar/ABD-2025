@@ -17,6 +17,7 @@
 	 FILENAME = 'C:\ABD2025\SII.ldf'
 	)
 -- 2. Crea las tablas siguientes :
+	USE SII;
 
 	CREATE TABLE Carreras(
 	carreraID VARCHAR(7) CONSTRAINT PK_Carreras

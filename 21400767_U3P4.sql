@@ -13,6 +13,7 @@ PRACTICA 4. BD AEROPUERTO
 --2. Crea el diagrama
 
 --3. Analiza la bd consultando lo que tiene cada tabla
+USE AEROPUERTO;
 	SELECT * FROM dbo.AEROLINEA;
 	SELECT * FROM dbo.AEROPUERTO;
 	SELECT * FROM dbo.AVION;
@@ -183,6 +184,8 @@ PRACTICA 4. BD AEROPUERTO
 
 --16. Conectarse al servidor usando cada uno de los logins creados y comprobar que los
 --permisos funcionan correctamente (realizando consultas, inserciones o actualizaciones).
+
+
 
 --17. Registrar las acciones realizadas por cada usuario y anotar qué operaciones tuvo permitido realizar y cuáles no.
 
