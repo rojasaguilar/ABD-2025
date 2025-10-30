@@ -232,9 +232,9 @@ Completion time: 2025-10-27T09:22:30.8837443-07:00
  SET EMPLEADO = 5;
 
  --7. CREAR LA FK
- ALTER TABLE REPORTS 
- ADD CONSTRAINT FK_ReportEmployee
- FOREIGN KEY(Empleado) references Employees(EmpleadoId);
+	 ALTER TABLE REPORTS 
+	 ADD CONSTRAINT FK_ReportEmployee
+	 FOREIGN KEY(Empleado) references Employees(EmpleadoId);
 
  --8. PARTICIONAR LA TABLA REPORTS USANDO UNA TABLA PUENTE
 	--A) CREAR FILEGROUPS
@@ -278,5 +278,86 @@ Completion time: 2025-10-27T09:22:30.8837443-07:00
 	) TO FILEGROUP FILE2025;
 
 	--C) CREAR LA FUNCIÓN DE PARTICIÓN (TAREA POR LA IZQUIERDA O LA DERECHA)
+	USE BDParticiones;
+
 	CREATE PARTITION FUNCTION f_partitiondate(date)
 	as RANGE LEFT FOR VALUES ('2022-12-31', '2023-12-31', '2024-12-31');
+
+	--right
+	CREATE PARTITION FUNCTION f_partitiondate(date)
+	as RANGE RIGHT FOR VALUES ('2023-01-01', '2024-01-01', '2025-01-01');
+
+	--D) CREAR ESQUEMA DE PARTICION
+
+	CREATE PARTITION SCHEME SchemePartDate 
+	AS PARTITION f_partitiondate
+	TO (FILE2022, FILE2023, FILE2024, FILE2025);
+
+	--E) CREAR UN INDICE Y ASIGNARLE EL ESQUEMA
+
+	 CREATE TABLE Reports_pa
+	 (IdReport int PRIMARY KEY NONCLUSTERED,
+	 ReportDate date not null default getdate(),
+	 ReportName varchar (100),
+	 ReportNumber varchar (20),
+	 ReportDescription varchar (max),
+	 Empleado smallint
+	 )
+
+	 CREATE CLUSTERED INDEX INX_PARTDATE
+	 ON Reports_pa (ReportDate)
+	 ON SchemePartDate (ReportDate);
+
+	 --COPIAR LOS DATOS 
+	insert into Reports_pa
+	select * from Reports;
+
+	select * from Reports_pa
+
+	--TAREA SP RENAME PARA REEMPLAZAR REPORTS (PONER FOREIGN KEY PARA REPORTS_PA, BORRAR REPORTS Y RENOMBAR)
+	ALTER TABLE Reports_pa 
+	 ADD CONSTRAINT FK_ReportEmployee
+	 FOREIGN KEY(Empleado) references Employees(EmpleadoId);
+
+	 drop table reports;
+
+	 exec sp_rename Reports_pa, Reports
+	 	 
+	-- mostrar cuantos registros tiene cada particion
+	select t.name, p.partition_number, p.rows  
+	from sys.partitions p 
+	inner join sys.tables t
+	on p.object_id = t.object_id
+	order by t.name
+	
+
+	-- CREAR UNA BASE DE DATOS NORTHWIND CON OTRO NOMBRE PARA PARTICIONAR ORDENES POR RANGOS DE 
+	CREATE DATABASE NorthwindParticionada
+	ON PRIMARY (
+	NAME = 'NorthwindParticionada', 
+	FILENAME = 'C:\ABD2025\NorthwindParticionada.mdf'
+	)
+	LOG ON (
+	 NAME = 'NorthwindParticionada_log', 
+	 FILENAME = 'C:\ABD2025\NorthwindParticionada.ldf'
+	)
+
+	--9. 
+	use BDParticiones
+	SELECT p.partition_number AS num_particion,
+	f.name AS nombre, p.rows as registros
+	from sys.partitions p
+	join sys.destination_data_spaces dds
+	on p.partition_number = dds.destination_id
+	join sys.filegroups f
+	on dds.data_space_id = f.data_space_id
+	where OBJECT_NAME(OBJECT_ID) = 'Reports'
+	AND p.index_id = 1;
+
+	--INSERTAR PARA PROBAR
+	INSERT INTO Reports (ReportDate, ReportName, empleado)
+	values 
+	('2003/03/21', 'ReportName2103',2)	,
+	('2003/03/21', 'ReportName2103',3)	
+
+	

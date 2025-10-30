@@ -1,0 +1,128 @@
+﻿--21400767_U3P7.SQL
+--PRACTICA 7
+--UNIDAD 3
+--AUTOR: RAMSES ROJAS AGUILAR
+--21400767
+--BREVE DESCRIPCIÓN
+
+
+--1) CREAR FILEGROUPS
+	ALTER DATABASE NorthwindParticionada
+	ADD FILEGROUP FILE1to166;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILEGROUP FILE167to333;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILEGROUP FILE334to500;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILEGROUP FILE501to667;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILEGROUP FILE668to830;
+
+--2) CREAR LOS DATAFILES
+	ALTER DATABASE NorthwindParticionada
+	ADD FILE (
+	NAME = 'Particion166.ndf',
+	filename = 'C:\ABD2025\DISCO1\Particion166.ndf'
+	) TO FILEGROUP FILE1to166;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILE (
+	NAME = 'Particion333.ndf',
+	filename = 'C:\ABD2025\DISCO2\Particion333.ndf'
+	) TO FILEGROUP FILE167to333;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILE (
+	NAME = 'Particion500.ndf',
+	filename = 'C:\ABD2025\DISCO3\Particion500.ndf' 
+	) TO FILEGROUP FILE334to500;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILE (
+	NAME = 'Particion667.ndf',
+	filename = 'C:\ABD2025\DISCO4\Particion667.ndf'
+	) TO FILEGROUP FILE501to667;
+
+	ALTER DATABASE NorthwindParticionada
+	ADD FILE (
+	NAME = 'Particion830.ndf',
+	filename = 'C:\ABD2025\DISCO5\Particion830.ndf' 
+	) TO FILEGROUP FILE668to830;
+
+	--CREAR FUNCION DE PARTICION 
+	-- RANGOS POR ORDERID 
+	--10248 - 10600) 
+	--10601 - 10800
+	--10801 - 10900
+	--10901 - 10999
+	--11000 ->
+	USE NorthwindParticionada;
+
+	--POR IZQUIERDA (LA QUE USÉ)
+	CREATE PARTITION FUNCTION f_partitionOrdersId(int)
+	as RANGE LEFT FOR VALUES (10600, 10800, 10900, 10999);
+
+	--POR DERECHA
+	CREATE PARTITION FUNCTION f_partitionOrdersIDright(int)
+	as RANGE RIGHT FOR VALUES (10601, 10801, 10901, 1100)
+
+	--ESQUEMA DE PARTICION
+	CREATE PARTITION SCHEME SchemePartOrderID 
+	AS PARTITION f_partitionOrdersId
+	TO (FILE1to166, FILE167to333, FILE334to500, FILE501to667,FILE668to830);
+
+	--5. CREAR EL INDICE CLUSTEREADO Y ASIGNAR EL ESQUEMA
+	exec sp_helpindex orders
+	SELECT 
+    CONSTRAINT_NAME,
+    CONSTRAINT_TYPE
+	FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+	WHERE TABLE_NAME = 'Orders';
+
+
+
+	--TAREA QUITAR EL CONSTRAINT DE FORIGN KEY DE ORDERDETAILS A LA TABLA ORDERS
+	ALTER TABLE [order details]
+	DROP CONSTRAINT FK_Order_Details_Orders
+	-- QUITAR EL CONSTRAINT DE PRIMARY KEY DE ORDERS
+	ALTER TABLE orders
+	DROP CONSTRAINT PK_Orders
+
+	-- CERAR EL INDICE CLUSTEREDAO Y ASIGNAR EL ESQUEMA 
+	CREATE CLUSTERED INDEX INX_PARTORDERID
+	 ON Orders (OrderId)
+	 ON SchemePartOrderID (OrderId);
+
+	-- Y NONCLOSTERED PARA LA LLAVE PRIMARIA
+	ALTER TABLE Orders
+	ADD CONSTRAINT PK_Orders_ID PRIMARY KEY NONCLUSTERED (OrderId);
+
+	--SELECT COUNT WHERE ORDER ID EN RANGOS PARA SABER CUANTOS DEBE DE HABER EN CADA PARTICION
+
+	select COUNT(*) as numeroDeOrdenes from Orders
+	where OrderID between 10248 and 10600;
+
+		select COUNT(*) as numeroDeOrdenes from Orders
+	where OrderID between 10601 and 10800;
+
+		select COUNT(*) as numeroDeOrdenes from Orders
+	where OrderID between 10801 and 10900;
+
+		select COUNT(*) as numeroDeOrdenes from Orders
+	where OrderID > 10900 
+
+	--CONSULTAR LOS FILEGROUPS DE LA BASE DE DATOS
+	SELECT name as AvailableFilegroups
+	from sys.filegroups
+	where type = 'FG'
+
+	--CONSULTAR LOS DATAFILES DE LA BASE DE DATOS
+	SELECT name as [FileName],
+	physical_name as [FILEPATH]
+	from sys.database_files
+	where type_desc = 'ROWS'
+	
