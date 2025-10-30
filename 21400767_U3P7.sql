@@ -88,6 +88,7 @@
 	--TAREA QUITAR EL CONSTRAINT DE FORIGN KEY DE ORDERDETAILS A LA TABLA ORDERS
 	ALTER TABLE [order details]
 	DROP CONSTRAINT FK_Order_Details_Orders
+	
 	-- QUITAR EL CONSTRAINT DE PRIMARY KEY DE ORDERS
 	ALTER TABLE orders
 	DROP CONSTRAINT PK_Orders
@@ -101,19 +102,26 @@
 	ALTER TABLE Orders
 	ADD CONSTRAINT PK_Orders_ID PRIMARY KEY NONCLUSTERED (OrderId);
 
+	-- DEVOLVER LA FK A LA TABLA HIJA
+	ALTER TABLE [Order Details]
+	ADD CONSTRAINT FK_Order_Details_Order FOREIGN KEY (OrderID) REFERENCES Orders(OrderID);
+
 	--SELECT COUNT WHERE ORDER ID EN RANGOS PARA SABER CUANTOS DEBE DE HABER EN CADA PARTICION
 
-	select COUNT(*) as numeroDeOrdenes from Orders
-	where OrderID between 10248 and 10600;
+	SELECT COUNT(*) AS PRIMERA FROM Orders
+	WHERE OrderID  <= 10600;
 
-		select COUNT(*) as numeroDeOrdenes from Orders
-	where OrderID between 10601 and 10800;
+	SELECT COUNT(*) AS SEGUNDA FROM Orders
+	WHERE OrderID between 10601 and 10800;
 
-		select COUNT(*) as numeroDeOrdenes from Orders
-	where OrderID between 10801 and 10900;
+	SELECT COUNT(*) AS TERCERA FROM Orders
+	WHERE OrderID between 10801 and 10900;
 
-		select COUNT(*) as numeroDeOrdenes from Orders
-	where OrderID > 10900 
+	SELECT COUNT(*) AS CUARTA FROM Orders
+	WHERE OrderID BETWEEN 10901 AND 10999
+	
+	SELECT COUNT(*) AS QUINTA FROM Orders
+	WHERE OrderID > 10999 
 
 	--CONSULTAR LOS FILEGROUPS DE LA BASE DE DATOS
 	SELECT name as AvailableFilegroups
@@ -125,4 +133,18 @@
 	physical_name as [FILEPATH]
 	from sys.database_files
 	where type_desc = 'ROWS'
+
+--6. VERIFICAR MIS PARTICIONES
+SELECT p.partition_number AS NUm_partition,
+f.name as NOmbre, p.rows as Registros from sys.partitions p
+inner join sys.destination_data_spaces dds
+on p.partition_number = dds.destination_id
+inner join sys.filegroups f
+on dds.data_space_id = f.data_space_id
+where OBJECT_NAME(object_id) = 'Orders'
+and p.index_id = 1;
+
+--7. INSERTAR Y VERIFICAR (SE IRÁ A LA PARTICOIN 5)
+INSERT INTO Orders(CustomerID, EmployeeID, ShipVia, OrderDate, RequiredDate, ShippedDate)
+values('Blaus', 7, 3, GETDATE(), GETDATE(), GETDATE());
 	
